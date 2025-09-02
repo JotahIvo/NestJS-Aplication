@@ -47,10 +47,10 @@ export class QuestionsService {
   }
 
   async findAllWithAuthorDetails() {
-    const questions = await this.prisma.questions.findMany();
+    const list = await this.prisma.questions.findMany();
 
-    const detailedQuestions = await Promise.all(
-      questions.map(async (question) => {
+    const result = await Promise.all(
+      list.map(async (question) => {
         const author = await this.prisma.user.findUnique({
           where: { id: question.userId },
           select: { name: true },
@@ -64,7 +64,7 @@ export class QuestionsService {
       }),
     );
 
-    return detailedQuestions;
+    return result;
   }
 
   async searchByTitle(term: string) {

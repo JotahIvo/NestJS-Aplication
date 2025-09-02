@@ -28,7 +28,6 @@ export class UserController {
     return this.userService.createUser(userData);
   }
 
-  @UseGuards(AuthGuard)
   @Get(':id')
   async getUser(
     @Param('id') id: string,

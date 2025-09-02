@@ -10,10 +10,17 @@ import { DatabaseModule } from 'src/database/database.module';
   imports: [
     DatabaseModule,
     forwardRef(() => UserModule),
-    JwtModule.register({
-      global: true,
-      secret: process.env.SECRET_KEY || '',
-      signOptions: { expiresIn: 86400 },
+    JwtModule.registerAsync({
+      useFactory: () => {
+        const secret = process.env.SECRET_KEY;
+        if (!secret) {
+          throw new Error('SECRET_KEY environment variable is not set!');
+        }
+        return {
+          secret: secret,
+          signOptions: { expiresIn: '86400s' }, 
+        };
+      },
     }),
   ],
   controllers: [AuthController],

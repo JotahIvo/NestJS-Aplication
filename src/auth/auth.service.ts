@@ -18,9 +18,14 @@ export class AuthService {
   async signIn(
     params: Prisma.UserCreateInput,
   ): Promise<{ access_token: string }> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: params.email },
-    });
+    let user;
+    try {
+      user = await this.prisma.user.findUnique({
+        where: { email: params.email },
+      });
+    } catch (e) {
+
+    }
 
     if (!user) throw new NotFoundException('User not found');
 

@@ -45,4 +45,25 @@ export class QuestionsService {
   async remove(id: string) {
     return await this.prisma.questions.delete({ where: { id } });
   }
+
+  async findAllWithAuthorDetails() {
+    const questions = await this.prisma.questions.findMany();
+
+    const detailedQuestions = await Promise.all(
+      questions.map(async (question) => {
+        const author = await this.prisma.user.findUnique({
+          where: { id: question.userId },
+          select: { name: true },
+        });
+        return {
+          id: question.id,
+          title: question.title,
+          body: question.body,
+          authorName: author ? author.name : 'Unknown',
+        };
+      }),
+    );
+
+    return detailedQuestions;
+  }
 }

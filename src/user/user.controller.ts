@@ -58,4 +58,9 @@ export class UserController {
   async deleteUser(@Param('id') id: string): Promise<User> {
     return this.userService.deleteUser({ id: id });
   }
+
+  @Post('stats')
+  async getUserStats(@Body() options: any) {
+    return this.userService.calculateUserStats(options);
+  }
 }

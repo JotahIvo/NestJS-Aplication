@@ -14,10 +14,43 @@ export class QuestionsService {
     });
   }
 
-  async findAll() {
-    return await this.prisma.questions.findMany({
-      include: { answers: true },
-    });
+  async findAll(params: { page: number; pageSize: number }) {
+    const { page, pageSize } = params;
+    const skip = (page - 1) * pageSize;
+
+    const [questions, total] = await this.prisma.$transaction([
+      this.prisma.questions.findMany({
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          title: true,
+          body: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              answers: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.questions.count(),
+    ]);
+
+    return {
+      data: questions,
+      totalPages: Math.ceil(total / pageSize),
+      currentPage: page,
+    };
   }
 
   async findOne(id: string) {

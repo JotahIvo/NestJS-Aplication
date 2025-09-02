@@ -8,7 +8,8 @@ import {
   Delete,
   UseGuards,
   Request,
-  Query
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -28,8 +29,11 @@ export class QuestionsController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.questionsService.findAll();
+  findAll(
+    @Query('page', new ParseIntPipe({ errorHttpStatusCode: 400, optional: true })) page = 1,
+    @Query('pageSize', new ParseIntPipe({ errorHttpStatusCode: 400, optional: true })) pageSize = 20,
+  ) {
+    return this.questionsService.findAll({ page, pageSize });
   }
 
   @UseGuards(AuthGuard)

@@ -7,6 +7,7 @@ import { Prisma } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/database/prisma.service';
+import { SignInDto } from './dto/signIn.dto';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
    * @throws {UnauthorizedException} If the provided password does not match the stored hash.
    */
   async signIn(
-    params: Prisma.UserCreateInput,
+    signInDto: SignInDto,
   ): Promise<{ access_token: string }> {
     console.log('--- SIGN IN ATTEMPT ---');
     console.log('Attempting to sign in user:', params.email);
@@ -31,7 +32,7 @@ export class AuthService {
     let user;
     try {
       user = await this.prisma.user.findUnique({
-        where: { email: params.email },
+        where: { email: signInDto.email },
       });
     } catch (e) {
 

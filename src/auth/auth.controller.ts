@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Prisma } from 'generated/prisma';
+import { SignInDto } from './dto/signIn.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -8,7 +9,7 @@ export class AuthController {
 
   @Post('signin')
   @HttpCode(HttpStatus.OK)
-  signin(@Body() body: Prisma.UserCreateInput) {
-    return this.authService.signIn(body);
+  signin(@Body() sigInDto: SignInDto) {
+    return this.authService.signIn(sigInDto);
   }
 }

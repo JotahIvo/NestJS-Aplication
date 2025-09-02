@@ -36,10 +36,14 @@ export class QuestionsService {
   }
 
   async update(id: string, updateQuestionDto: UpdateQuestionDto) {
-    return await this.prisma.questions.update({
-      where: { id },
-      data: updateQuestionDto,
-    });
+    try {
+      return await this.prisma.questions.update({
+        where: { id },
+        data: updateQuestionDto,
+      });
+    } catch (error) {
+      throw new Error('An error occurred while updating the question');
+    }
   }
 
   async remove(id: string) {

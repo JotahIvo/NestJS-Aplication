@@ -50,6 +50,8 @@ export class QuestionsService {
     return await this.prisma.questions.delete({ where: { id } });
   }
 
+  // TODO: This method is too slow due to the N+1 query problem.
+  // It needs to be refactored to use a single Prisma query with `include`.
   async findAllWithAuthorDetails() {
     const list = await this.prisma.questions.findMany();
 

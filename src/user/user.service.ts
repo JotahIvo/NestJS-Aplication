@@ -23,7 +23,7 @@ export class UserService {
     });
   }
 
-  async createUser(data: Prisma.UserCreateInput) {
+  async createUser(data: any) {
     // Hashes the user's password before saving
     const hashPassword = await bcrypt.hash(data.password, 10);
 

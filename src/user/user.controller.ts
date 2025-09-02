@@ -23,7 +23,7 @@ export class UserController {
 
   @Post()
   async signupUser(
-    @Body(new ValidationPipe()) userData: CreateUserDto,
+    @Body(new ValidationPipe()) userData: Record<string, any>,
   ): Promise<User> {
     return this.userService.createUser(userData);
   }

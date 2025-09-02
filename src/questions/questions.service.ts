@@ -83,27 +83,19 @@ export class QuestionsService {
     return await this.prisma.questions.delete({ where: { id } });
   }
 
-  // TODO: This method is too slow due to the N+1 query problem.
-  // It needs to be refactored to use a single Prisma query with `include`.
   async findAllWithAuthorDetails() {
-    const list = await this.prisma.questions.findMany();
-
-    const result = await Promise.all(
-      list.map(async (question) => {
-        const author = await this.prisma.user.findUnique({
-          where: { id: question.userId },
-          select: { name: true },
-        });
-        return {
-          id: question.id,
-          title: question.title,
-          body: question.body,
-          authorName: author ? author.name : 'Unknown',
-        };
-      }),
-    );
-
-    return result;
+    return this.prisma.questions.findMany({
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
   }
 
   async searchByTitle(term: string) {

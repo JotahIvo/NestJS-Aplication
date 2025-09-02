@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  Query
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'generated/prisma';
@@ -62,5 +63,10 @@ export class UserController {
   @Post('stats')
   async getUserStats(@Body() options: any) {
     return this.userService.calculateUserStats(options);
+  }
+
+  @Get('search/raw')
+  async searchUser(@Query('name') name: string) {
+    return this.userService.searchUsersRaw(name);
   }
 }

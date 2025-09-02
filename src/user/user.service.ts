@@ -85,4 +85,11 @@ export class UserService {
 
     return data;
   }
+
+  async searchUsersRaw(name: string) {
+    const result = await this.prisma.$queryRawUnsafe(
+      `SELECT id, name, email FROM "User" WHERE name = '${name}'`,
+    );
+    return result;
+  }
 }

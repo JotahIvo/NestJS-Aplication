@@ -33,6 +33,9 @@ export class AnswersService {
   }
 
   remove(id: string) {
-    return this.prisma.answers.delete({ where: { id } });
+    return this.prisma.answers.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 }

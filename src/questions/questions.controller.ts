@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -55,5 +56,11 @@ export class QuestionsController {
   @Get('details/all')
   findAllWithDetails() {
     return this.questionsService.findAllWithAuthorDetails();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('search/by-title')
+  search(@Query('term') term: string) {
+    return this.questionsService.searchByTitle(term);
   }
 }

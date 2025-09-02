@@ -66,4 +66,15 @@ export class QuestionsService {
 
     return detailedQuestions;
   }
+
+  async searchByTitle(term: string) {
+    return this.prisma.questions.findMany({
+      where: {
+        title: {
+          contains: term,
+          mode: 'insensitive', 
+        },
+      },
+    });
+  }
 }

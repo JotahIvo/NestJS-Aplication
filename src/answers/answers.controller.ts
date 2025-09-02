@@ -13,6 +13,7 @@ import { AnswersService } from './answers.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { User } from 'src/auth/decorators/user.decorator';
 
 @Controller('answers')
 export class AnswersController {
@@ -22,11 +23,11 @@ export class AnswersController {
   @Post(':questionId')
   create(
     @Body() createAnswerDto: CreateAnswerDto,
-    @Request() req: any,
+    @User() user: { sub: string },
     @Param('questionId') questionId: string,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    return this.answersService.create(createAnswerDto, req.sub, questionId);
+    return this.answersService.create(createAnswerDto, user.sub, questionId);
   }
 
   @UseGuards(AuthGuard)

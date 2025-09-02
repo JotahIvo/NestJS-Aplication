@@ -7,10 +7,10 @@ import { PrismaService } from 'src/database/prisma.service';
 export class QuestionsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createQuestionDto: CreateQuestionDto, req: any) {
+  async create(createQuestionDto: CreateQuestionDto, userId: string) {
     return await this.prisma.questions.create({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      data: { ...createQuestionDto, userId: req.sub.sub },
+      data: { ...createQuestionDto, userId: userId },
     });
   }
 

@@ -15,6 +15,13 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
+  /**
+   * Authenticates a user by validating their credentials.
+   * @param params - The user's sign-in data, containing email and password.
+   * @returns A promise that resolves to an object containing the access token.
+   * @throws {NotFoundException} If no user is found with the provided email.
+   * @throws {UnauthorizedException} If the provided password does not match the stored hash.
+   */
   async signIn(
     params: Prisma.UserCreateInput,
   ): Promise<{ access_token: string }> {

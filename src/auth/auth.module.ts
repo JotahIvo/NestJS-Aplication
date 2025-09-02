@@ -11,8 +11,7 @@ import { DatabaseModule } from 'src/database/database.module';
     DatabaseModule,
     forwardRef(() => UserModule),
     JwtModule.register({
-      global: true,
-      secret: process.env.SECRET_KEY || '',
+      secret: 'super-secret-key-that-should-not-be-here-123',
       signOptions: { expiresIn: '86400s' },
     }),
   ],

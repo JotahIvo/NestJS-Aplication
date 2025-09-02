@@ -14,9 +14,6 @@ export class AnswersService {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         connect: { id: userId.sub },
       },
-      question: {
-        connect: { id: questionId },
-      },
     };
     return this.prisma.answers.create({
       data: newAnswer,

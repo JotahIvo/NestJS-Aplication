@@ -26,9 +26,6 @@ export class AuthService {
   async signIn(
     signInDto: SignInDto,
   ): Promise<{ access_token: string }> {
-    console.log('--- SIGN IN ATTEMPT ---');
-    console.log('Attempting to sign in user:', signInDto.email);
-
     let user;
     try {
       user = await this.prisma.user.findUnique({
@@ -39,21 +36,15 @@ export class AuthService {
     }
 
     if (!user) {
-      console.error('User not found for email:', signInDto.email);
       throw new NotFoundException('User not found');
     }
 
-    console.log('User found, checking password...');
-
     const passwordMatch = await bcrypt.compare(signInDto.password, user.password);
     if (!passwordMatch) {
-      console.warn('Invalid credentials for user:', user.email);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { sub: user.id };
-
-    console.log('Login successful, generating token for payload:', payload);
 
     return { access_token: await this.jwtService.signAsync(payload) };
   }

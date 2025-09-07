@@ -1,6 +1,6 @@
 import {
-  Injectable,
   ForbiddenException,
+  Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -13,7 +13,6 @@ export class QuestionsService {
 
   async create(createQuestionDto: CreateQuestionDto, userId: string) {
     return await this.prisma.questions.create({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       data: { ...createQuestionDto, userId: userId },
     });
   }
@@ -26,6 +25,7 @@ export class QuestionsService {
       this.prisma.questions.findMany({
         skip,
         take: pageSize,
+        where: { deletedAt: null }, // Adicionado filtro
         select: {
           id: true,
           title: true,
@@ -47,7 +47,7 @@ export class QuestionsService {
           createdAt: 'desc',
         },
       }),
-      this.prisma.questions.count(),
+      this.prisma.questions.count({ where: { deletedAt: null } }), // Adicionado filtro
     ]);
 
     return {
@@ -59,9 +59,9 @@ export class QuestionsService {
 
   async findOne(id: string) {
     return await this.prisma.questions.findUnique({
-      where: { id },
+      where: { id, deletedAt: null }, // Adicionado filtro
       include: {
-        answers: true,
+        answers: { where: { deletedAt: null } },
         user: {
           select: {
             name: true,
@@ -74,7 +74,7 @@ export class QuestionsService {
 
   async update(id: string, updateQuestionDto: UpdateQuestionDto, userId: string) {
     const question = await this.prisma.questions.findUnique({
-      where: { id },
+      where: { id, deletedAt: null }, // Adicionado filtro
     });
 
     if (!question) {
@@ -93,7 +93,7 @@ export class QuestionsService {
 
   async remove(id: string, userId: string) {
     const question = await this.prisma.questions.findUnique({
-      where: { id },
+      where: { id, deletedAt: null }, // Adicionado filtro
     });
 
     if (!question) {
@@ -103,12 +103,17 @@ export class QuestionsService {
     if (question.userId !== userId) {
       throw new ForbiddenException('You are not allowed to delete this question');
     }
-    
-    return this.prisma.questions.delete({ where: { id } });
+
+    // Alterado de .delete para .update para implementar o soft-delete
+    return this.prisma.questions.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async findAllWithAuthorDetails() {
     return this.prisma.questions.findMany({
+      where: { deletedAt: null }, // Adicionado filtro
       select: {
         id: true,
         title: true,
@@ -127,8 +132,9 @@ export class QuestionsService {
       where: {
         title: {
           contains: term,
-          mode: 'insensitive', 
+          mode: 'insensitive',
         },
+        deletedAt: null, // Adicionado filtro
       },
     });
   }

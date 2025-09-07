@@ -1,26 +1,25 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './auth/auth.guard';
 import { DatabaseModule } from 'src/database/database.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     DatabaseModule,
     forwardRef(() => UserModule),
     JwtModule.registerAsync({
-      useFactory: () => {
-        const secret = process.env.SECRET_KEY;
-        if (!secret) {
-          throw new Error('SECRET_KEY environment variable is not set!');
-        }
-        return {
-          secret: secret,
-          signOptions: { expiresIn: '86400s' }, 
-        };
-      },
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('SECRET_KEY'),
+        signOptions: {
+          expiresIn: '86400s',
+        },
+      }),
     }),
   ],
   controllers: [AuthController],

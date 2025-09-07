@@ -6,9 +6,13 @@ import { QuestionsModule } from './questions/questions.module';
 import { AnswersModule } from './answers/answers.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config'; // Adicione esta importação
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Torna o ConfigModule global
+    }),
     AuthModule,
     UserModule,
     DatabaseModule,

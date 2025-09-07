@@ -58,7 +58,7 @@ export class QuestionsController {
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
     const requestUrl = `/questions/${id}`;
-    await this.cacheManager.del(requestUrl); // Invalida o cache do item específico
+    await this.cacheManager.del(requestUrl); 
     return this.questionsService.update(id, updateQuestionDto);
   }
 
@@ -67,7 +67,7 @@ export class QuestionsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const requestUrl = `/questions/${id}`;
-    await this.cacheManager.del(requestUrl); // Invalida o cache do item específico
+    await this.cacheManager.del(requestUrl); 
     return this.questionsService.remove(id);
   }
 

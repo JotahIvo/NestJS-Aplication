@@ -89,8 +89,9 @@ export class UserService {
   }
 
   async searchUsersRaw(name: string) {
-    const result = await this.prisma.$queryRawUnsafe(
-      `SELECT id, name, email FROM "User" WHERE name = '${name}'`,
+    // Using Prisma.sql template literal for parameterized query to prevent SQL injection
+    const result = await this.prisma.$queryRaw(
+      Prisma.sql`SELECT id, name, email FROM "User" WHERE name = ${name}`,
     );
     return result;
   }

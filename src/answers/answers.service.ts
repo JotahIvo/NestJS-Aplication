@@ -8,15 +8,16 @@ export class AnswersService {
   constructor(private prisma: PrismaService) {}
 
   create(createAnswerDto: CreateAnswerDto, userId: string, questionId: string) {
-    const newAnswer = {
-      body: createAnswerDto.body,
-      user: {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        connect: { id: userId },
-      },
-    };
     return this.prisma.answers.create({
-      data: newAnswer,
+      data: {
+        body: createAnswerDto.body,
+        user: {
+          connect: { id: userId },
+        },
+        question: {
+          connect: { id: questionId },
+        },
+      },
     });
   }
 

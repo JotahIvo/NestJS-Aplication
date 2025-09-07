@@ -33,16 +33,25 @@ export class AnswersService {
    * @returns A list of all answers.
    */
   findAll() {
-    return this.prisma.answers.findMany();
+    return this.prisma.answers.findMany({
+      where: {
+        deletedAt: null,
+      },
+    });
   }
 
   /**
-   * Retrieves a single answer by its unique ID.
+   * Retrieves a single active (not soft-deleted) answer by its unique ID.
    * @param id The ID of the answer to retrieve.
-   * @returns The found answer or null if not found.
+   * @returns The found answer or null if not found or soft-deleted.
    */
   findOne(id: string) {
-    return this.prisma.answers.findUnique({ where: { id } });
+    return this.prisma.answers.findUnique({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
   }
 
   /**

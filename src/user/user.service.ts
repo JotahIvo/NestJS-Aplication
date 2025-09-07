@@ -37,60 +37,6 @@ export class UserService {
     return this.userRepository.delete(where);
   }
 
-  async calculateUserStats(options: GetUserStatsDto) {    
-    // All calculations are now done efficiently in the database.
-    const [totalUsers, totalQuestions, totalAnswers] = await this.prisma.$transaction([
-      this.prisma.user.count(),
-      this.prisma.questions.count(),
-      this.prisma.answers.count({ where: { deletedAt: null } }),
-    ]);
-
-    const data: any = {
-      totalUsers,
-      totalQuestions,
-      totalAnswers,
-      averageQuestionsPerUser: totalUsers > 0 ? totalQuestions / totalUsers : 0,
-    };
-
-    if (options && options.includeTopUser) {
-      const topUserAgg = await this.prisma.answers.groupBy({
-        by: ['userId'],
-        _count: {
-          userId: true,
-        },
-        orderBy: {
-          _count: {
-            userId: 'desc',
-          },
-        },
-        take: 1,
-      });
-
-      if (topUserAgg.length > 0) {
-        const topUserId = topUserAgg[0].userId;
-        const topUser = await this.prisma.user.findUnique({
-          where: { id: topUserId },
-          select: { name: true },
-        });
-        data.userWithMostAnswers = topUser?.name || null;
-      } else {
-        data.userWithMostAnswers = null;
-      }
-    }
-
-    if (options && options.mode === 'full') {
-      return {
-        metadata: {
-          timestamp: new Date().toISOString(),
-          source: 'stats-endpoint',
-        },
-        report: data,
-      };
-    }
-
-    return data;
-  }
-
   async searchUsersRaw(name: string) {
     // Using Prisma.sql template literal for parameterized query to prevent SQL injection
     const result = await this.prisma.$queryRaw(

@@ -16,10 +16,14 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { GetUserStatsDto } from './dtos/getUserStats.dto';
+import { UserStatsQueryHandler } from './queries/user-stats.query';
 
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private userStatsQueryHandler: UserStatsQueryHandler,
+  ) {}
 
   @Post()
   async signupUser(@Body() userData: CreateUserDto): Promise<User> {
@@ -58,8 +62,8 @@ export class UserController {
   }
 
   @Post('stats')
-  async getUserStats(@Body() options: GetUserStatsDto) {
-    return this.userService.calculateUserStats(options);
+  async getUserStats(@Body() options: GetUserStats-Dto) {
+    return this.userStatsQueryHandler.execute(options); // Chame o handler
   }
 
   @Get('search/raw')

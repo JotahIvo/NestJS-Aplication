@@ -6,12 +6,19 @@ import { QuestionsModule } from './questions/questions.module';
 import { AnswersModule } from './answers/answers.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config'; // Adicione esta importação
+import { ConfigModule } from '@nestjs/config';
+import { LoggerModule } from 'nestjs-pino'; 
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Torna o ConfigModule global
+    ConfigModule.forRoot({ isGlobal: true }),
+    LoggerModule.forRoot({ 
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? { target: 'pino-pretty' } 
+            : undefined,
+      },
     }),
     AuthModule,
     UserModule,

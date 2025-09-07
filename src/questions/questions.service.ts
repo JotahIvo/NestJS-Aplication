@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PrismaService } from 'src/database/prisma.service';
@@ -68,19 +72,39 @@ export class QuestionsService {
     });
   }
 
-  async update(id: string, updateQuestionDto: UpdateQuestionDto) {
-    try {
-      return await this.prisma.questions.update({
-        where: { id },
-        data: updateQuestionDto,
-      });
-    } catch (error) {
-      throw new Error('An error occurred while updating the question');
+  async update(id: string, updateQuestionDto: UpdateQuestionDto, userId: string) {
+    const question = await this.prisma.questions.findUnique({
+      where: { id },
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID "${id}" not found`);
     }
+
+    if (question.userId !== userId) {
+      throw new ForbiddenException('You are not allowed to update this question');
+    }
+
+    return this.prisma.questions.update({
+      where: { id },
+      data: updateQuestionDto,
+    });
   }
 
-  async remove(id: string) {
-    return await this.prisma.questions.delete({ where: { id } });
+  async remove(id: string, userId: string) {
+    const question = await this.prisma.questions.findUnique({
+      where: { id },
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID "${id}" not found`);
+    }
+
+    if (question.userId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this question');
+    }
+    
+    return this.prisma.questions.delete({ where: { id } });
   }
 
   async findAllWithAuthorDetails() {

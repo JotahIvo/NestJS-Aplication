@@ -47,42 +47,55 @@ export class UserService {
     });
   }
 
-  // Adicione este método
   async calculateUserStats(options: any) {
-    // Simula uma operação complexa e ineficiente
-    const users = await this.prisma.user.findMany();
-    const questions = await this.prisma.questions.findMany();
-    const answers = await this.prisma.answers.findMany();
+    // All calculations are now done efficiently in the database.
+    const [totalUsers, totalQuestions, totalAnswers] = await this.prisma.$transaction([
+      this.prisma.user.count(),
+      this.prisma.questions.count(),
+      this.prisma.answers.count({ where: { deletedAt: null } }),
+    ]);
 
-    const data: any = {};
-    data.totalUsers = users.length;
-    data.totalQuestions = questions.length;
-    data.totalAnswers = answers.length;
-    data.averageQuestionsPerUser = questions.length / users.length;
+    const data: any = {
+      totalUsers,
+      totalQuestions,
+      totalAnswers,
+      averageQuestionsPerUser: totalUsers > 0 ? totalQuestions / totalUsers : 0,
+    };
 
     if (options && options.includeTopUser) {
-      let topUser = null;
-      let maxAnswers = -1;
+      const topUserAgg = await this.prisma.answers.groupBy({
+        by: ['userId'],
+        _count: {
+          userId: true,
+        },
+        orderBy: {
+          _count: {
+            userId: 'desc',
+          },
+        },
+        take: 1,
+      });
 
-      for (const user of users) {
-        const userAnswers = answers.filter((a) => a.userId === user.id).length;
-        if (userAnswers > maxAnswers) {
-          maxAnswers = userAnswers;
-          topUser = user.name;
-        }
+      if (topUserAgg.length > 0) {
+        const topUserId = topUserAgg[0].userId;
+        const topUser = await this.prisma.user.findUnique({
+          where: { id: topUserId },
+          select: { name: true },
+        });
+        data.userWithMostAnswers = topUser?.name || null;
+      } else {
+        data.userWithMostAnswers = null;
       }
-      data.userWithMostAnswers = topUser;
     }
 
     if (options && options.mode === 'full') {
-      const res = {
+      return {
         metadata: {
           timestamp: new Date().toISOString(),
           source: 'stats-endpoint',
         },
         report: data,
       };
-      return res;
     }
 
     return data;

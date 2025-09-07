@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus,
+} from '@nestjs/common';
 import { Prisma } from 'generated/prisma';
 import { Response } from 'express';
 
@@ -16,6 +21,15 @@ export class PrismaClientExceptionFilter implements ExceptionFilter {
         response.status(status).json({
           statusCode: status,
           message: 'A record with these details already exists.',
+        });
+        break;
+      }
+      case 'P2003': {
+        // Foreign key constraint failed
+        const status = HttpStatus.BAD_REQUEST;
+        response.status(status).json({
+          statusCode: status,
+          message: 'Invalid input: a related record does not exist.',
         });
         break;
       }

@@ -1,5 +1,3 @@
-// Substitua o conteúdo de src/answers/answers.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { PrismaService } from 'src/database/prisma.service';

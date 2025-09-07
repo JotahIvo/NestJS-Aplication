@@ -7,20 +7,27 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
   Query,
   ParseIntPipe,
+  SetMetadata,
+  UseInterceptors, 
+  Inject,        
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { User } from 'src/auth/decorators/user.decorator';
 import { OwnershipGuard } from 'src/auth/guards/ownership.guard';
+import { CacheInterceptor, CACHE_MANAGER } from '@nestjs/cache-manager'; 
+import { Cache } from 'cache-manager';
 
 @Controller('questions')
 export class QuestionsController {
-  constructor(private readonly questionsService: QuestionsService) {}
+  constructor(
+    private readonly questionsService: QuestionsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -28,7 +35,7 @@ export class QuestionsController {
     return this.questionsService.create(createQuestionDto, user.sub);
   }
 
-  @UseGuards(AuthGuard)
+  @UseInterceptors(CacheInterceptor)
   @Get()
   findAll(
     @Query('page', new ParseIntPipe({ errorHttpStatusCode: 400, optional: true })) page = 1,
@@ -37,26 +44,30 @@ export class QuestionsController {
     return this.questionsService.findAll({ page, pageSize });
   }
 
-  @UseGuards(AuthGuard)
+  @UseInterceptors(CacheInterceptor)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.questionsService.findOne(id);
   }
 
   @UseGuards(AuthGuard, OwnershipGuard)
-  @SetMetadata('resource', 'questions') // Diz ao guard qual recurso verificar
+  @SetMetadata('resource', 'questions')
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
+    const requestUrl = `/questions/${id}`;
+    await this.cacheManager.del(requestUrl); // Invalida o cache do item específico
     return this.questionsService.update(id, updateQuestionDto);
   }
 
   @UseGuards(AuthGuard, OwnershipGuard)
-  @SetMetadata('resource', 'questions') // Diz ao guard qual recurso verificar
+  @SetMetadata('resource', 'questions')
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
+    const requestUrl = `/questions/${id}`;
+    await this.cacheManager.del(requestUrl); // Invalida o cache do item específico
     return this.questionsService.remove(id);
   }
 

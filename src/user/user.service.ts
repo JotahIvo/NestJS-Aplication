@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { Prisma, User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
+import { GetUserStatsDto } from './dtos/getUserStats.dto';
 
 @Injectable()
 export class UserService {
@@ -47,7 +48,7 @@ export class UserService {
     });
   }
 
-  async calculateUserStats(options: any) {
+  async calculateUserStats(options: GetUserStatsDto) {    
     // All calculations are now done efficiently in the database.
     const [totalUsers, totalQuestions, totalAnswers] = await this.prisma.$transaction([
       this.prisma.user.count(),

@@ -15,6 +15,7 @@ import { User } from 'generated/prisma';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
+import { GetUserStatsDto } from './dtos/getUserStats.dto';
 
 @Controller('user')
 export class UserController {
@@ -57,7 +58,7 @@ export class UserController {
   }
 
   @Post('stats')
-  async getUserStats(@Body() options: any) {
+  async getUserStats(@Body() options: GetUserStatsDto) {
     return this.userService.calculateUserStats(options);
   }
 

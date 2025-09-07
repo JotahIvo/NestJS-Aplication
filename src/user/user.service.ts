@@ -98,4 +98,42 @@ export class UserService {
     );
     return result;
   }
+
+  /**
+   * Creates a new user and their first question within a single atomic transaction.
+   * If either the user or question creation fails, the entire operation is rolled back.
+   * @param userData The data for the new user.
+   * @param questionData The data for the first question.
+   * @returns The newly created user, without the password.
+   */
+  async createUserAndFirstQuestion(
+    userData: Prisma.UserCreateInput,
+    questionData: { title: string; body: string },
+  ) {
+    const newUser = await this.prisma.$transaction(async (transactionClient) => {
+      // 1. Hash the password
+      const hashPassword = await bcrypt.hash(userData.password, 10);
+      const userWithHashedPassword = { ...userData, password: hashPassword };
+
+      // 2. Create the user using the transaction client
+      const createdUser = await transactionClient.user.create({
+        data: userWithHashedPassword,
+      });
+
+      // 3. Create the first question using the transaction client
+      await transactionClient.questions.create({
+        data: {
+          title: questionData.title,
+          body: questionData.body,
+          userId: createdUser.id,
+        },
+      });
+
+      return createdUser;
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = newUser;
+    return result;
+  }
 }

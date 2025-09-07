@@ -72,17 +72,14 @@ export class QuestionsService {
     });
   }
 
-  async update(id: string, updateQuestionDto: UpdateQuestionDto, userId: string) {
-    const question = await this.prisma.questions.findUnique({
-      where: { id, deletedAt: null }, // Adicionado filtro
+  async update(id: string, updateQuestionDto: UpdateQuestionDto) {
+    // A verificação de propriedade foi removida daqui
+    const question = await this.prisma.questions.findFirst({
+      where: { id, deletedAt: null },
     });
 
     if (!question) {
       throw new NotFoundException(`Question with ID "${id}" not found`);
-    }
-
-    if (question.userId !== userId) {
-      throw new ForbiddenException('You are not allowed to update this question');
     }
 
     return this.prisma.questions.update({
@@ -91,20 +88,15 @@ export class QuestionsService {
     });
   }
 
-  async remove(id: string, userId: string) {
-    const question = await this.prisma.questions.findUnique({
-      where: { id, deletedAt: null }, // Adicionado filtro
+  async remove(id: string) {
+    const question = await this.prisma.questions.findFirst({
+      where: { id, deletedAt: null },
     });
 
     if (!question) {
       throw new NotFoundException(`Question with ID "${id}" not found`);
     }
 
-    if (question.userId !== userId) {
-      throw new ForbiddenException('You are not allowed to delete this question');
-    }
-
-    // Alterado de .delete para .update para implementar o soft-delete
     return this.prisma.questions.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -113,7 +105,7 @@ export class QuestionsService {
 
   async findAllWithAuthorDetails() {
     return this.prisma.questions.findMany({
-      where: { deletedAt: null }, // Adicionado filtro
+      where: { deletedAt: null },
       select: {
         id: true,
         title: true,

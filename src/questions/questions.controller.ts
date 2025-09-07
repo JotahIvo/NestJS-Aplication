@@ -14,8 +14,9 @@ import {
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { User } from 'src/auth/decorators/user.decorator';
+import { OwnershipGuard } from 'src/auth/guards/ownership.guard';
 
 @Controller('questions')
 export class QuestionsController {
@@ -42,20 +43,21 @@ export class QuestionsController {
     return this.questionsService.findOne(id);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, OwnershipGuard)
+  @SetMetadata('resource', 'questions') // Diz ao guard qual recurso verificar
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateQuestionDto: UpdateQuestionDto,
-    @User() user: { sub: string },
   ) {
-    return this.questionsService.update(id, updateQuestionDto, user.sub);
+    return this.questionsService.update(id, updateQuestionDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, OwnershipGuard)
+  @SetMetadata('resource', 'questions') // Diz ao guard qual recurso verificar
   @Delete(':id')
-  remove(@Param('id') id: string, @User() user: { sub: string }) {
-    return this.questionsService.remove(id, user.sub);
+  remove(@Param('id') id: string) {
+    return this.questionsService.remove(id);
   }
 
   @UseGuards(AuthGuard)

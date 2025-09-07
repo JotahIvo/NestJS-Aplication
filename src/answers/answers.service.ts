@@ -32,12 +32,27 @@ export class AnswersService {
    * Retrieves all answers from the database.
    * @returns A list of all answers.
    */
-  findAll() {
-    return this.prisma.answers.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
+  async findAll(params: { page: number; pageSize: number }) {
+    const { page, pageSize } = params;
+    const skip = (page - 1) * pageSize;
+
+    const [answers, total] = await this.prisma.$transaction([
+      this.prisma.answers.findMany({
+        where: { deletedAt: null },
+        skip,
+        take: pageSize,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.answers.count({ where: { deletedAt: null } }),
+    ]);
+
+    return {
+      data: answers,
+      totalPages: Math.ceil(total / pageSize),
+      currentPage: page,
+    };
   }
 
   /**

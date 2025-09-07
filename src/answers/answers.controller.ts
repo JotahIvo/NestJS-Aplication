@@ -7,7 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AnswersService } from './answers.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
@@ -32,8 +33,11 @@ export class AnswersController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.answersService.findAll();
+  findAll(
+    @Query('page', new ParseIntPipe({ errorHttpStatusCode: 400, optional: true })) page = 1,
+    @Query('pageSize', new ParseIntPipe({ errorHttpStatusCode: 400, optional: true })) pageSize = 20,
+  ) {
+    return this.answersService.findAll({ page, pageSize });
   }
 
   @UseGuards(AuthGuard)

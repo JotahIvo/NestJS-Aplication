@@ -1,51 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/database/prisma.service';
 import { Prisma, User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { GetUserStatsDto } from './dtos/getUserStats.dto';
+import { UserRepository } from './user.repository';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private userRepository: UserRepository,
+    private prisma: PrismaService,
+  ) {}
 
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
   ): Promise<Omit<User, 'password'> | null> {
-    return this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        password: false,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const user = await this.userRepository.findOne(userWhereUniqueInput);
+    if (!user) return null;
+    const { password, ...result } = user;
+    return result;
   }
 
-  async createUser(data: any) {
-    // Hashes the user's password before saving
+  async createUser(data: Prisma.UserCreateInput) {
     const hashPassword = await bcrypt.hash(data.password, 10);
-    console.log(hashPassword);
-
-    return this.prisma.user.create({
-      data: { ...data, password: hashPassword },
-    });
+    return this.userRepository.create({ ...data, password: hashPassword });
   }
 
   async updateUser(params: {
     where: Prisma.UserWhereUniqueInput;
     data: Prisma.UserUpdateInput;
   }): Promise<User> {
-    const { where, data } = params;
-    return this.prisma.user.update({ data, where });
+    return this.userRepository.update(params);
   }
 
   async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.delete({
-      where,
-    });
+    return this.userRepository.delete(where);
   }
 
   async calculateUserStats(options: GetUserStatsDto) {    

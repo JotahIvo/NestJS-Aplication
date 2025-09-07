@@ -21,6 +21,7 @@ import { User } from 'src/auth/decorators/user.decorator';
 import { OwnershipGuard } from 'src/auth/guards/ownership.guard';
 import { CacheInterceptor, CACHE_MANAGER } from '@nestjs/cache-manager'; 
 import { Cache } from 'cache-manager';
+import { FeatureGuard } from 'src/features/feature.guard';
 
 @Controller('questions')
 export class QuestionsController {
@@ -81,5 +82,15 @@ export class QuestionsController {
   @Get('search/by-title')
   search(@Query('term') term: string) {
     return this.questionsService.searchByTitle(term);
+  }
+
+  @Get('search/advanced')
+  @UseGuards(FeatureGuard)
+  @SetMetadata('feature_key', 'isAdvancedSearchEnabled')
+  advancedSearch(@Query('q') query: string) {
+    return {
+      message: 'Advanced search feature is active',
+      query,
+    };
   }
 }
